@@ -8,7 +8,7 @@ AKUMA is a desktop application for generating synthetic datasets with configurab
 
 ## Planned MVP
 
-- Desktop GUI
+- Desktop GUI (Current WIP - Navigation menu has been created)
 - Configurable data fields
 - Synthetic data generation
 - Controlled generation of corrupted records
