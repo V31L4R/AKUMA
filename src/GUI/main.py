@@ -1,5 +1,12 @@
 import sys
-from PySide6.QtWidgets import QApplication, QMainWindow, QWidget, QHBoxLayout
+from pathlib import Path
+from PySide6.QtWidgets import QApplication, QMainWindow, QWidget, QHBoxLayout, QPushButton, QVBoxLayout
+from PySide6.QtWidgets import QStackedWidget
+from pages.main_settings import MainSettingsPage
+from pages.corruption import CorruptionPage
+from pages.advanced import AdvancedPage
+from pages.options import OptionsPage
+from pages.help import HelpPage
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -7,18 +14,93 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("AKUMA")
         self.resize(1000, 700)
         central_widget = QWidget()
-        ##central_widget.setStyleSheet("background-color:white;") - test string to make sure that widget has been created 
         main_layout = QHBoxLayout()
         central_widget.setLayout(main_layout)
 
         sidebar = QWidget()
-        content_area = QWidget()
+        sidebar.setObjectName("sidebar")
+        stylesheet_path = (
+            Path(__file__).parent
+            / "styles"
+            / "sidebar.qss"
+        )
+
+        with open(stylesheet_path, "r") as stylesheet_file:
+
+            stylesheet = stylesheet_file.read()
+
+        sidebar.setStyleSheet(stylesheet)
+
+
+        sidebar_layout = QVBoxLayout()
+        sidebar.setLayout(sidebar_layout)
+        content_area = QStackedWidget()
+        main_settings_page = MainSettingsPage()
+        corruption_page = CorruptionPage()
+        advanced_page = AdvancedPage()
+        options_page = OptionsPage()
+        help_page = HelpPage()
+        content_area.addWidget(main_settings_page)
+        content_area.addWidget(corruption_page)
+        content_area.addWidget(advanced_page)
+        content_area.addWidget(options_page)
+        content_area.addWidget(help_page)
+
         main_layout.addWidget(sidebar,1)
         main_layout.addWidget(content_area,4)
-        sidebar.setStyleSheet("background-color: #202020;") 
+        
         content_area.setStyleSheet("background-color: #303030;") 
         
         self.setCentralWidget(central_widget)
+
+        main_settings_button = QPushButton("Main Settings")
+        corruption_button = QPushButton("Corruption")
+        advanced_button = QPushButton("Advanced")
+        options_button = QPushButton("Options")
+        help_button = QPushButton("Help")
+
+        navigation_buttons = [
+            main_settings_button,
+         corruption_button,
+            advanced_button,
+            options_button,
+            help_button,
+        ]
+
+        def set_active_button(selected_button):
+            for button in navigation_buttons:
+                button.setProperty("active", button is selected_button)
+                button.style().unpolish(button)
+                button.style().polish(button)
+                button.update()
+        for button in navigation_buttons:
+            button.clicked.connect(
+                lambda checked=False, button=button: set_active_button(button)
+            )
+
+        set_active_button(main_settings_button)
+        sidebar_layout.addWidget(main_settings_button)
+        sidebar_layout.addWidget(corruption_button)
+        sidebar_layout.addWidget(advanced_button)
+        sidebar_layout.addWidget(options_button)
+        sidebar_layout.addWidget(help_button)
+
+        main_settings_button.clicked.connect(
+            lambda: content_area.setCurrentWidget(main_settings_page)
+        )
+        corruption_button.clicked.connect(
+            lambda: content_area.setCurrentWidget(corruption_page)
+        )
+        advanced_button.clicked.connect(
+            lambda: content_area.setCurrentWidget(advanced_page)
+        )
+        options_button.clicked.connect(
+            lambda: content_area.setCurrentWidget(options_page)
+        )
+        help_button.clicked.connect(
+            lambda: content_area.setCurrentWidget(help_page)
+        )
+        sidebar_layout.addStretch()
 
 
 
@@ -31,5 +113,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-

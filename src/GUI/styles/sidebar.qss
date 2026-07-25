@@ -1,0 +1,39 @@
+            QWidget#sidebar {
+                background-color: #202020;
+            }
+
+            QWidget#sidebar QPushButton {
+                background-color: transparent;
+                color: white;
+                border: 1px solid white;
+                border-radius: 6px;
+                padding: 8px 10px;
+                text-align: center;
+                font-size: 12px;
+            }
+
+            QWidget#sidebar QPushButton[active="true"] {
+            background-color: white;
+            color: black;
+            border: 1px solid white;
+            }
+
+            QWidget#sidebar QPushButton:hover {
+                background-color: #353535;
+            }
+
+            QWidget#sidebar QPushButton:pressed {
+                background-color: #505050;
+            }
+
+            QWidget#sidebar QPushButton[active="true"]:hover {
+            background-color: white;
+            color: black;
+            border: 1px solid white;
+            }
+
+            QWidget#sidebar QPushButton[active="true"]:pressed {
+            background-color: white;
+            color: black;
+            border: 1px solid white;
+            }
