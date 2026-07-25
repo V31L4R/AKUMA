@@ -8,6 +8,37 @@ from pages.advanced import AdvancedPage
 from pages.options import OptionsPage
 from pages.help import HelpPage
 
+# Загружает общие стили приложения.
+def load_global_stylesheet():
+
+    # Определяет путь к директории со стилями.
+    styles_directory = Path(__file__).parent / "styles"
+
+    # Хранит пути только к глобальным QSS-файлам.
+    stylesheet_paths = [
+
+        # Подключает общие стили приложения.
+        styles_directory / "general.qss",
+
+        # Подключает стили переиспользуемых элементов управления.
+        styles_directory / "controls.qss",
+    ]
+
+    # Хранит содержимое прочитанных QSS-файлов.
+    stylesheet_parts = []
+
+    # Последовательно перебирает глобальные файлы стилей.
+    for stylesheet_path in stylesheet_paths:
+
+        # Открывает текущий QSS-файл в режиме чтения.
+        with open(stylesheet_path, "r", encoding="utf-8") as stylesheet_file:
+
+            # Добавляет содержимое файла в общий список.
+            stylesheet_parts.append(stylesheet_file.read())
+
+    # Объединяет глобальные стили в одну строку.
+    return "\n".join(stylesheet_parts)
+
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -107,6 +138,8 @@ class MainWindow(QMainWindow):
 def main():
 
     app = QApplication(sys.argv)
+     # Применяет общие стили ко всему приложению.
+    app.setStyleSheet(load_global_stylesheet())
     window = MainWindow()
     window.show()
     sys.exit(app.exec())

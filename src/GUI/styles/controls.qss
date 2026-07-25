@@ -1,0 +1,5 @@
+/* Превращает QComboBox в обычный выпадающий список. */
+QComboBox {
+    combobox-popup: 0;
+}
+
