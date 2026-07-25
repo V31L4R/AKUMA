@@ -4,7 +4,7 @@ AKUMA is a desktop application for generating synthetic datasets with configurab
 
 ## Status
 
-(!) 22.07.2026  Work in progress.
+(!) 25.07.2026  Work in progress.
 
 ## Planned MVP
 
