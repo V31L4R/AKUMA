@@ -8,3 +8,29 @@ QFrame#fields_selector_popup {
     border: 1px solid #555555;
     border-radius: 4px;
 }
+
+/* Неактивный чип выбора поля. */
+QPushButton#field_chip {
+    background-color: transparent;
+    color: white;
+
+    border: 1px solid #777777;
+    border-radius: 12px;
+
+    padding: 4px 10px;
+
+    /* Отключаем системную отрисовку кнопки. */
+    outline: none;
+}
+
+/* Состояние чипа при наведении. */
+QPushButton#field_chip:hover {
+    background-color: #4a4a4a;
+}
+
+/* Выбранный чип. */
+QPushButton#field_chip:checked {
+    background-color: #ffffff;
+    color: #000000;
+    border: 1px solid #ffffff;
+}

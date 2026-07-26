@@ -80,7 +80,15 @@ class MainWindow(QMainWindow):
         main_layout.addWidget(sidebar,1)
         main_layout.addWidget(content_area,4)
         
-        content_area.setStyleSheet("background-color: #303030;") 
+       # Задаём имя области контента для точечного обращения из QSS.
+        content_area.setObjectName("content_area")
+
+        # Красим только сам QStackedWidget, не затрагивая дочерние элементы.
+        content_area.setStyleSheet("""
+            QStackedWidget#content_area {
+                background-color: #303030;
+            }
+        """)
         
         self.setCentralWidget(central_widget)
 

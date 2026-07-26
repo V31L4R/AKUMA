@@ -141,7 +141,7 @@ class MainSettingsPage(QWidget):
         self.generate_button.setFixedSize(110, 50)
 
         # Временно подключаем кнопку к проверке получаемых значений формы.
-        self.generate_button.clicked.connect(self.test_form_values)
+        # self.generate_button.clicked.connect(self.test_form_values)
 
         # Добавляем кнопку в правую часть строки.
         generate_row.addWidget(self.generate_button)

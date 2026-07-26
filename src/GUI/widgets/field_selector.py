@@ -1,5 +1,5 @@
 # Импортируем базовый виджет Qt.
-from PySide6.QtWidgets import QWidget, QPushButton, QVBoxLayout, QFrame, QCheckBox
+from PySide6.QtWidgets import QWidget, QPushButton, QVBoxLayout, QFrame
 
 
 # Виджет выбора полей для генерации датасета.
@@ -50,8 +50,8 @@ class FieldsSelector(QWidget):
         # Назначаем Layout раскрывающейся панели
         self.popup.setLayout(popup_layout)
 
-        # Сохранение чекбоксов по имени поля для дальнейшей обработки
-        self.field_checkboxes = {}
+        # Сохраняем чипсы по имени поля для дальнейшей обработки.
+        self.field_chips = {}
 
         # Определяем доступные поля для первой версии селектора
         
@@ -65,18 +65,37 @@ class FieldsSelector(QWidget):
             "Country",
         ]
 
-        # Создаём отдельный чекбокс для каждого доступного поля.
+        # Создаём отдельный чип для каждого доступного поля.
         for field_name in avaliable_fields:
 
-            field_checkbox = QCheckBox(field_name)
-            # Обновляем текст кнопки при изменении состояния чекбокса.
-            field_checkbox.stateChanged.connect(self.update_button_text)
+            # Создаём кнопку с названием поля и символом добавления.
+            field_chip = QPushButton(f"{field_name} +")
 
-            # Сохраняем чекбокс, используя имя поля как ключ.
-            self.field_checkboxes[field_name] = field_checkbox
+            # Отключаем нативный рамочный стиль кнопки,
+            # чтобы QSS полностью управлял её фоном.
+            field_chip.setFlat(True)
 
-            # Добавляем чекбокс в раскрывающуюся панель.
-            popup_layout.addWidget(field_checkbox)
+            # Разрешаем кнопке хранить два состояния:
+            # выбрана и не выбрана.
+            field_chip.setCheckable(True)
+
+            # Сохраняем исходное имя поля внутри самого чипа.
+            field_chip.setProperty("field_name", field_name)
+
+            # Задаём общее имя для стилизации всех чипсов через QSS.
+            field_chip.setObjectName("field_chip")
+
+            # При клике обновляем внешний вид чипса
+            # и текст основной кнопки селектора.
+            field_chip.toggled.connect(
+                lambda checked, chip=field_chip: self.update_chip_state(chip, checked)
+            )
+
+            # Сохраняем чип, используя имя поля как ключ.
+            self.field_chips[field_name] = field_chip
+
+            # Добавляем чип в раскрывающуюся панель.
+            popup_layout.addWidget(field_chip)
 
         # Задаём временную минимальную высоту, пока панель ещё не содержит полей.
         self.popup.setMinimumHeight(80)
@@ -94,12 +113,30 @@ class FieldsSelector(QWidget):
 
     def get_selected_fields(self):
 
-    # Возвращаем имена всех отмеченных пользователем полей.
+        # Возвращаем имена всех выбранных пользователем полей.
         return [
             field_name
-            for field_name, checkbox in self.field_checkboxes.items()
-            if checkbox.isChecked()
+            for field_name, chip in self.field_chips.items()
+            if chip.isChecked()
         ]
+
+    def update_chip_state(self, chip, checked):
+
+        # Получаем исходное имя поля из свойства чипса.
+        field_name = chip.property("field_name")
+
+        # Если чип выбран — убираем символ добавления.
+        if checked:
+
+            chip.setText(field_name)
+
+        # Если выбор снят — возвращаем символ добавления.
+        else:
+
+            chip.setText(f"{field_name} +")
+
+        # Обновляем текст основной кнопки селектора.
+        self.update_button_text()
 
     def update_button_text(self):
 
