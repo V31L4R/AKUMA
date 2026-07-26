@@ -1,6 +1,8 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QLineEdit, QHBoxLayout, QComboBox, QPushButton
 from PySide6.QtGui import QIntValidator
+from widgets.field_selector import FieldsSelector
 from pathlib import Path
+from PySide6.QtCore import Qt
 
 class MainSettingsPage(QWidget):
     def __init__(self):
@@ -39,25 +41,25 @@ class MainSettingsPage(QWidget):
         records_label = QLabel("Number of Records")
 
         # Создаем пустое текстовое поле для количества генерируемых записей.
-        records_input = QLineEdit()
+        self.records_input = QLineEdit()
 
         # Показываем допустимый диапазон, пока пользователь ничего не ввел.
-        records_input.setPlaceholderText("1 to 10'000'000")
+        self.records_input.setPlaceholderText("1 to 10'000'000")
 
         # Создаем валидатор, разрешающий только целые числа в допустимом диапазоне.
-        records_validator = QIntValidator(1, 10_000_000, records_input)
+        records_validator = QIntValidator(1, 10_000_000, self.records_input)
 
         # Подключаем валидатор к полю ввода.
-        records_input.setValidator(records_validator)
+        self.records_input.setValidator(records_validator)
 
         # Ограничиваем ширину поля, чтобы оно не растягивалось на всю страницу.
-        records_input.setFixedWidth(160)
+        self.records_input.setFixedWidth(160)
 
         # Добавляем подпись в строку настройки.
         records_row.addWidget(records_label)
 
         # Добавляем пустое поле ввода рядом с подписью.
-        records_row.addWidget(records_input)
+        records_row.addWidget(self.records_input)
 
         # Прижимаем элементы строки к левому краю страницы.
         records_row.addStretch()
@@ -72,29 +74,53 @@ class MainSettingsPage(QWidget):
         format_label = QLabel("File Format")
 
         # Создаем выпадающий список доступных форматов.
-        format_input = QComboBox()
+        self.format_input = QComboBox()
 
         # Добавляем поддерживаемые форматы файлов.
-        format_input.addItem("CSV")
-        format_input.addItem("JSON")
-        format_input.addItem("Parquet")
-        format_input.addItem("XML")
-        format_input.addItem("Excel (.xlsx)")
+        self.format_input.addItem("CSV")
+        self.format_input.addItem("JSON")
+        self.format_input.addItem("Parquet")
+        self.format_input.addItem("XML")
+        self.format_input.addItem("Excel (.xlsx)")
 
         # Ограничиваем ширину выпадающего списка.
-        format_input.setFixedWidth(160)
+        self.format_input.setFixedWidth(160)
 
         # Добавляем подпись в строку настройки.
         format_row.addWidget(format_label)
 
         # Добавляем выпадающий список в строку настройки.
-        format_row.addWidget(format_input)
+        format_row.addWidget(self.format_input)
 
         # Прижимаем элементы строки к левому краю.
         format_row.addStretch()
 
         # Добавляем строку выбора формата в основной layout страницы.
         page_layout.addLayout(format_row)
+
+        # Создаём горизонтальную строку для выбора включённых полей.
+        fields_row = QHBoxLayout()
+        
+        # Создаём подпись для выбора полей.
+        fields_label = QLabel("Included Fields")
+        
+        # Создаём экземпляр кастомного виджета выбора полей.
+        self.field_selector = FieldsSelector()
+        
+        # Добавляем подпись в строку.
+        fields_row.addWidget(fields_label, alignment=Qt.AlignmentFlag.AlignTop)
+        
+        # Добавляем виджет выбора полей.
+        fields_row.addWidget(
+            self.field_selector,
+            alignment=Qt.AlignmentFlag.AlignTop
+        )
+        
+        # Прижимаем содержимое строки к левому краю.
+        fields_row.addStretch()
+        
+        # Добавляем строку в основной layout страницы.
+        page_layout.addLayout(fields_row)
 
          # Заполняем свободное вертикальное пространство между формами и кнопкой.
         page_layout.addStretch()
@@ -106,17 +132,36 @@ class MainSettingsPage(QWidget):
         generate_row.addStretch()
 
         # Создаём кнопку запуска генерации датасета.
-        generate_button = QPushButton("Generate")
+        self.generate_button = QPushButton("Generate")
 
         # Задаём кнопке имя для дальнейшего обращения из QSS.
-        generate_button.setObjectName("generate_button")
+        self.generate_button.setObjectName("generate_button")
 
         # Задаём фиксированный размер кнопки согласно текущему макету.
-        generate_button.setFixedSize(110, 50)
+        self.generate_button.setFixedSize(110, 50)
+
+        # Временно подключаем кнопку к проверке получаемых значений формы.
+        self.generate_button.clicked.connect(self.test_form_values)
 
         # Добавляем кнопку в правую часть строки.
-        generate_row.addWidget(generate_button)
+        generate_row.addWidget(self.generate_button)
 
         # Добавляем строку с кнопкой в основной layout страницы.
         page_layout.addLayout(generate_row)
 
+    #Тест передачи данных
+    # def test_form_values(self):
+
+        # Получаем количество записей из текстового поля.
+        records_count = self.records_input.text()
+
+        # Получаем выбранный формат файла.
+        file_format = self.format_input.currentText()
+
+        # Получаем список выбранных полей из кастомного селектора.
+        selected_fields = self.field_selector.get_selected_fields()
+
+        # Временно выводим полученные значения в консоль.
+        print("Number of Records:", records_count)
+        print("File Format:", file_format)
+        print("Included Fields:", selected_fields)

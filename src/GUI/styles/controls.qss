@@ -3,3 +3,8 @@ QComboBox {
     combobox-popup: 0;
 }
 
+QFrame#fields_selector_popup {
+    background-color: #3a3a3a;
+    border: 1px solid #555555;
+    border-radius: 4px;
+}
