@@ -13,6 +13,7 @@ QFrame#fields_selector_popup {
 QPushButton#field_chip {
     background-color: transparent;
     color: white;
+    min-height: 20px;
 
     border: 1px solid #777777;
     border-radius: 12px;

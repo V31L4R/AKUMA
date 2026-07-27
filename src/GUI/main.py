@@ -71,6 +71,47 @@ class MainWindow(QMainWindow):
         advanced_page = AdvancedPage()
         options_page = OptionsPage()
         help_page = HelpPage()
+
+        # Передаёт актуальные параметры Main Settings
+        # на страницу Corruption для расчёта доступного количества данных.
+        def sync_corruption_limits():
+
+            # Получаем текущее значение количества записей.
+            records_text = main_settings_page.records_input.text()
+
+            # Преобразуем заполненное поле в число.
+            # Если поле пустое — передаём 0.
+            records_count = int(records_text) if records_text else 0
+
+            # Получаем список выбранных полей.
+            selected_fields = (
+                main_settings_page
+                .field_selector
+                .get_selected_fields()
+            )
+
+            # Передаём количество записей и сами выбранные поля
+            # на страницу Corruption.
+            corruption_page.update_available_data(
+                records_count,
+                selected_fields
+            )
+
+
+        # Пересчитываем лимиты при изменении количества записей.
+        main_settings_page.records_input.textChanged.connect(
+            sync_corruption_limits
+        )
+
+        # Пересчитываем лимиты при изменении выбранных полей.
+        main_settings_page.field_selector.selection_changed.connect(
+            sync_corruption_limits
+        )
+
+        # Выполняем первоначальную синхронизацию
+        # сразу после создания обеих страниц.
+        sync_corruption_limits()
+
         content_area.addWidget(main_settings_page)
         content_area.addWidget(corruption_page)
         content_area.addWidget(advanced_page)
