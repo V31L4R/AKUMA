@@ -13,10 +13,13 @@ class FieldsSelector(QWidget):
     selection_changed = Signal()
 
     # Создаём экземпляр виджета.
-    def __init__(self, available_fields=None):
+    def __init__(self, available_fields=None, trigger_text="Select Fields"):
 
         # Инициализируем родительский класс QWidget.
         super().__init__()
+
+        # Сохраняем базовый текст кнопки селектора.
+        self.trigger_text = trigger_text
 
         # Создаём основной вертикальный layout компонента.
         selector_layout = QVBoxLayout()
@@ -28,7 +31,7 @@ class FieldsSelector(QWidget):
         self.setLayout(selector_layout)
         
         # Создаём кнопку, которая открывает и закрывает список полей.
-        self.trigger_button = QPushButton("Select Fields ▼")
+        self.trigger_button = QPushButton(f"{self.trigger_text} ▼")
         
         # Задаём имя для обращения к кнопке из QSS.
         self.trigger_button.setObjectName("fields_selector_trigger")
@@ -170,7 +173,7 @@ class FieldsSelector(QWidget):
         # Если ничего не выбрано — возвращаем исходный текст.
         if not selected_fields:
 
-            self.trigger_button.setText("Select Fields ▼")
+            self.trigger_button = QPushButton(f"{self.trigger_text} ▼")
 
             return
 

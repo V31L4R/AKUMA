@@ -1,3 +1,4 @@
+from pprint import pprint
 import sys
 from pathlib import Path
 from PySide6.QtWidgets import QApplication, QMainWindow, QWidget, QHBoxLayout, QPushButton, QVBoxLayout
@@ -71,6 +72,113 @@ class MainWindow(QMainWindow):
         advanced_page = AdvancedPage()
         options_page = OptionsPage()
         help_page = HelpPage()
+
+        # Временно собирает и выводит актуальные значения формы
+        # в момент нажатия кнопки Generate.
+        def print_form_values():
+
+            # Получаем текст Number of Records без преобразования,
+            # чтобы увидеть даже значение, которое валидатор не принимает.
+            records_text = (
+                main_settings_page
+                .records_input
+                .text()
+                .strip()
+            )
+
+            # Получаем текст Amount of Corrupt Data без преобразования.
+            amount_text = (
+                corruption_page
+                .corruption_amount_input
+                .text()
+                .strip()
+            )
+
+            # Собираем диагностический снимок текущей формы.
+            form_values = {
+                "main_settings": {
+                    "number_of_records_raw": records_text,
+                    "number_of_records_acceptable": (
+                        main_settings_page
+                        .records_input
+                        .hasAcceptableInput()
+                    ),
+                    "file_format": (
+                        main_settings_page
+                        .format_input
+                        .currentText()
+                    ),
+                    "included_fields": (
+                        main_settings_page
+                        .field_selector
+                        .get_selected_fields()
+                    ),
+                },
+
+                "corruption": {
+                    "enabled": (
+                        corruption_page
+                        .corruption_switch
+                        .isChecked()
+                    ),
+                    "mode": (
+                        corruption_page
+                        .corruption_mode
+                        .currentText()
+                    ),
+                    "amount_raw": amount_text,
+                    "amount_acceptable": (
+                        corruption_page
+                        .corruption_amount_input
+                        .hasAcceptableInput()
+                    ),
+                    "amount_type": (
+                        corruption_page
+                        .corruption_amount_type
+                        .currentText()
+                    ),
+                    "exclusive": (
+                        corruption_page
+                        .exclusive_switch
+                        .isChecked()
+                    ),
+                    "corrupted_columns": (
+                        corruption_page
+                        .corrupted_columns_selector
+                        .get_selected_fields()
+                    ),
+                    "corruption_types": (
+                        corruption_page
+                        .corruption_type_selector
+                        .get_selected_fields()
+                    ),
+                },
+            }
+
+            # Отделяем каждый новый запуск теста.
+            print("\n" + "=" * 60)
+            print("AKUMA FORM VALUES")
+            print("=" * 60)
+
+            # Красиво выводим вложенный словарь.
+            pprint(
+                form_values,
+                sort_dicts=False,
+            )
+
+            print("=" * 60)
+
+            # По нажатию Generate на Main Settings
+        # выводим актуальные значения всей формы.
+        main_settings_page.generate_button.clicked.connect(
+            print_form_values
+        )
+
+        # По нажатию Generate на Corruption
+        # выводим тот же самый снимок формы.
+        corruption_page.generate_button.clicked.connect(
+            print_form_values
+        )
 
         # Передаёт актуальные параметры Main Settings
         # на страницу Corruption для расчёта доступного количества данных.

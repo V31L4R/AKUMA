@@ -229,6 +229,29 @@ class CorruptionPage(QWidget):
 
         page_layout.addStretch()
 
+        # Создаём горизонтальную строку для кнопки генерации.
+        generate_row = QHBoxLayout()
+
+        # Добавляем растягиваемое пространство слева,
+        # чтобы кнопка находилась в правой части страницы.
+        generate_row.addStretch()
+
+        # Создаём кнопку запуска генерации.
+        self.generate_button = QPushButton("Generate")
+
+        # Используем то же имя, что и на Main Settings,
+        # чтобы применился общий стиль кнопки.
+        self.generate_button.setObjectName("generate_button")
+
+        # Задаём фиксированный размер согласно текущему макету.
+        self.generate_button.setFixedSize(110, 50)
+
+        # Добавляем кнопку в строку.
+        generate_row.addWidget(self.generate_button)
+
+        # Добавляем строку с кнопкой в основной layout страницы.
+        page_layout.addLayout(generate_row)
+
         # Создаём строку выбора повреждаемых колонок.
         corrupted_columns_row = QHBoxLayout()
 
@@ -251,10 +274,46 @@ class CorruptionPage(QWidget):
         )
 
         corrupted_columns_row.addStretch()
+        
 
-        self.corruption_controls_layout.addLayout(
-        corrupted_columns_row
+        self.corruption_controls_layout.addLayout(corrupted_columns_row)
+
+        # Создаём строку выбора типов коррупции.
+        corruption_type_row = QHBoxLayout()
+
+        # Создаём подпись.
+        corruption_type_label = QLabel("Corruption Type")
+
+        # Создаём чиповый multi-select
+        # с типами ошибок MVP.
+        self.corruption_type_selector = FieldsSelector(
+            available_fields=[
+                "NULL",
+                "Empty String",
+                "Invalid Format",
+                "Invalid Value",
+            ],
+            trigger_text="Select Corruption Types"
         )
+
+        # Добавляем подпись в строку.
+        corruption_type_row.addWidget(
+            corruption_type_label
+        )
+
+        # Добавляем селектор типов ошибок.
+        corruption_type_row.addWidget(
+            self.corruption_type_selector
+        )
+
+        # Прижимаем содержимое строки влево.
+        corruption_type_row.addStretch()
+
+        # Добавляем строку в общий контейнер.
+        self.corruption_controls_layout.addLayout(
+            corruption_type_row
+        )
+
 
     def update_corruption_state(self, enabled):
 

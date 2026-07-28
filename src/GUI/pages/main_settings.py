@@ -149,8 +149,8 @@ class MainSettingsPage(QWidget):
         # Добавляем строку с кнопкой в основной layout страницы.
         page_layout.addLayout(generate_row)
 
-    #Тест передачи данных
-    # def test_form_values(self):
+        #Тест передачи данных
+    def test_form_values(self):
 
         # Получаем количество записей из текстового поля.
         records_count = self.records_input.text()
