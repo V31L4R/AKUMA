@@ -1,0 +1,9 @@
+QLabel#coming_soon_label {
+    border: 1px solid #ffffff;
+    border-radius: 8px;
+
+    padding: 6px 12px;
+
+    background-color: transparent;
+    color: #ffffff;
+}

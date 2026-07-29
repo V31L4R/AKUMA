@@ -71,6 +71,12 @@ class MainWindow(QMainWindow):
         corruption_page = CorruptionPage()
         advanced_page = AdvancedPage()
         options_page = OptionsPage()
+
+        # Подключаем изменение режима отображения окна.
+        options_page.screen_layout_changed.connect(
+            self.update_screen_layout
+        )
+
         help_page = HelpPage()
 
         # Временно собирает и выводит актуальные значения формы
@@ -291,6 +297,18 @@ class MainWindow(QMainWindow):
         sidebar_layout.addStretch()
 
 
+
+    def update_screen_layout(self, layout_mode):
+
+        # Переключаем приложение в полноэкранный режим.
+        if layout_mode == "Fullscreen":
+
+            self.showFullScreen()
+
+        # Возвращаем приложение в обычный оконный режим.
+        else:
+
+            self.showNormal()
 
 def main():
 
