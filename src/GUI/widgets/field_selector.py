@@ -173,7 +173,9 @@ class FieldsSelector(QWidget):
         # Если ничего не выбрано — возвращаем исходный текст.
         if not selected_fields:
 
-            self.trigger_button = QPushButton(f"{self.trigger_text} ▼")
+            self.trigger_button.setText(
+                f"{self.trigger_text} ▼"
+            )
 
             return
 
@@ -234,3 +236,43 @@ class FieldsSelector(QWidget):
 
         # Возвращаем стандартный текст кнопки.
         self.update_button_text()
+
+    def set_selected_fields(self, selected_fields):
+
+        # Преобразуем список выбранных полей во множество,
+        # чтобы быстро проверять наличие каждого поля.
+        selected_fields = set(selected_fields)
+
+        # Проходим по всем существующим чипсам селектора.
+        for field_name, chip in self.field_chips.items():
+
+            # Временно блокируем сигнал конкретного чипса,
+            # чтобы восстановление состояния не вызывало
+            # selection_changed после каждого элемента.
+            chip.blockSignals(True)
+
+            # Восстанавливаем состояние текущего чипса.
+            chip.setChecked(
+                field_name in selected_fields
+            )
+
+            # Возвращаем обработку сигналов.
+            chip.blockSignals(False)
+
+            # Обновляем текст выбранного чипса.
+            if chip.isChecked():
+
+                chip.setText(field_name)
+
+            # Обновляем текст невыбранного чипса.
+            else:
+
+                chip.setText(f"{field_name} +")
+
+        # После восстановления всех чипсов
+        # обновляем текст основной кнопки селектора.
+        self.update_button_text()
+
+        # Один раз сообщаем внешним компонентам,
+        # что итоговый набор выбранных полей изменился.
+        self.selection_changed.emit()

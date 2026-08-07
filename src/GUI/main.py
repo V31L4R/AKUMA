@@ -3,6 +3,7 @@ import sys
 from pathlib import Path
 from PySide6.QtWidgets import QApplication, QMainWindow, QWidget, QHBoxLayout, QPushButton, QVBoxLayout
 from PySide6.QtWidgets import QStackedWidget
+from PySide6.QtCore import QSettings
 from pages.main_settings import MainSettingsPage
 from pages.corruption import CorruptionPage
 from pages.advanced import AdvancedPage
@@ -43,6 +44,19 @@ def load_global_stylesheet():
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+        # Создаём постоянное хранилище настроек AKUMA.
+        self.settings = QSettings(
+            "AKUMA",
+            "AKUMA"
+        )
+
+        # Получаем сохранённое состояние функции Remember Settings.
+        # Если приложение запускается впервые — используем OFF.
+        self.remember_settings_enabled = self.settings.value(
+            "remember_settings",
+            False,
+            type=bool
+        )
         self.setWindowTitle("AKUMA")
         self.resize(1000, 700)
         central_widget = QWidget()
@@ -67,99 +81,53 @@ class MainWindow(QMainWindow):
         sidebar_layout = QVBoxLayout()
         sidebar.setLayout(sidebar_layout)
         content_area = QStackedWidget()
-        main_settings_page = MainSettingsPage()
-        corruption_page = CorruptionPage()
-        advanced_page = AdvancedPage()
-        options_page = OptionsPage()
+        self.main_settings_page = MainSettingsPage()
+        self.corruption_page = CorruptionPage()
+        self.advanced_page = AdvancedPage()
+        self.options_page = OptionsPage()
+        self.help_page = HelpPage()
+
+        # Временно сохраняем старые локальные имена страниц,
+        # чтобы существующий код __init__ продолжил работать без изменений.
+        main_settings_page = self.main_settings_page
+        corruption_page = self.corruption_page
+        advanced_page = self.advanced_page
+        options_page = self.options_page
+        help_page = self.help_page
 
         # Подключаем изменение режима отображения окна.
         options_page.screen_layout_changed.connect(
             self.update_screen_layout
         )
 
-        help_page = HelpPage()
+        # Подключаем изменение Remember Settings
+        # к MainWindow.
+        self.options_page.remember_settings_changed.connect(
+            self.update_remember_settings
+        )
+
+        # Восстанавливаем сохранённое состояние переключателя.
+        self.options_page.remember_settings_switch.blockSignals(True)
+
+        self.options_page.remember_settings_switch.setChecked(
+            self.remember_settings_enabled
+        )
+
+        self.options_page.remember_settings_switch.setText(
+            "ON"
+            if self.remember_settings_enabled
+            else "OFF"
+        )
+
+        self.options_page.remember_settings_switch.blockSignals(False)
 
         # Временно собирает и выводит актуальные значения формы
         # в момент нажатия кнопки Generate.
         def print_form_values():
 
-            # Получаем текст Number of Records без преобразования,
-            # чтобы увидеть даже значение, которое валидатор не принимает.
-            records_text = (
-                main_settings_page
-                .records_input
-                .text()
-                .strip()
-            )
+            # Получаем единый снимок текущего состояния формы.
+            form_values = self.build_form_state()
 
-            # Получаем текст Amount of Corrupt Data без преобразования.
-            amount_text = (
-                corruption_page
-                .corruption_amount_input
-                .text()
-                .strip()
-            )
-
-            # Собираем диагностический снимок текущей формы.
-            form_values = {
-                "main_settings": {
-                    "number_of_records_raw": records_text,
-                    "number_of_records_acceptable": (
-                        main_settings_page
-                        .records_input
-                        .hasAcceptableInput()
-                    ),
-                    "file_format": (
-                        main_settings_page
-                        .format_input
-                        .currentText()
-                    ),
-                    "included_fields": (
-                        main_settings_page
-                        .field_selector
-                        .get_selected_fields()
-                    ),
-                },
-
-                "corruption": {
-                    "enabled": (
-                        corruption_page
-                        .corruption_switch
-                        .isChecked()
-                    ),
-                    "mode": (
-                        corruption_page
-                        .corruption_mode
-                        .currentText()
-                    ),
-                    "amount_raw": amount_text,
-                    "amount_acceptable": (
-                        corruption_page
-                        .corruption_amount_input
-                        .hasAcceptableInput()
-                    ),
-                    "amount_type": (
-                        corruption_page
-                        .corruption_amount_type
-                        .currentText()
-                    ),
-                    "exclusive": (
-                        corruption_page
-                        .exclusive_switch
-                        .isChecked()
-                    ),
-                    "corrupted_columns": (
-                        corruption_page
-                        .corrupted_columns_selector
-                        .get_selected_fields()
-                    ),
-                    "corruption_types": (
-                        corruption_page
-                        .corruption_type_selector
-                        .get_selected_fields()
-                    ),
-                },
-            }
 
             # Отделяем каждый новый запуск теста.
             print("\n" + "=" * 60)
@@ -296,6 +264,109 @@ class MainWindow(QMainWindow):
         )
         sidebar_layout.addStretch()
 
+    def build_form_state(self):
+
+        # Получаем Number of Records как исходный текст.
+        records_text = (
+            self.main_settings_page
+            .records_input
+            .text()
+            .strip()
+        )
+
+        # Получаем Amount of Corrupt Data как исходный текст.
+        amount_text = (
+            self.corruption_page
+            .corruption_amount_input
+            .text()
+            .strip()
+        )
+
+        # Возвращаем полный снимок текущего состояния формы.
+        return {
+            "main_settings": {
+                "number_of_records_raw": records_text,
+                "number_of_records_acceptable": (
+                    self.main_settings_page
+                    .records_input
+                    .hasAcceptableInput()
+                ),
+                "file_format": (
+                    self.main_settings_page
+                    .format_input
+                    .currentText()
+                ),
+                "included_fields": (
+                    self.main_settings_page
+                    .field_selector
+                    .get_selected_fields()
+                ),
+            },
+
+            "corruption": {
+                "enabled": (
+                    self.corruption_page
+                    .corruption_switch
+                    .isChecked()
+                ),
+                "mode": (
+                    self.corruption_page
+                    .corruption_mode
+                    .currentText()
+                ),
+                "amount_raw": amount_text,
+                "amount_acceptable": (
+                    self.corruption_page
+                    .corruption_amount_input
+                    .hasAcceptableInput()
+                ),
+                "amount_type": (
+                    self.corruption_page
+                    .corruption_amount_type
+                    .currentText()
+                ),
+                "exclusive": (
+                    self.corruption_page
+                    .exclusive_switch
+                    .isChecked()
+                ),
+                "corrupted_columns": (
+                    self.corruption_page
+                    .corrupted_columns_selector
+                    .get_selected_fields()
+                ),
+                "corruption_types": (
+                    self.corruption_page
+                    .corruption_type_selector
+                    .get_selected_fields()
+                ),
+            },
+        }
+
+    def save_form_state(self):
+
+        # Если функция отключена —
+        # ничего не сохраняем.
+        if not self.remember_settings_enabled:
+
+            return
+
+        # Получаем текущее состояние формы.
+        form_state = self.build_form_state()
+
+        # Сохраняем его в постоянное хранилище.
+        self.settings.setValue(
+            "saved_form",
+            form_state
+        )
+
+        print()
+
+        print("FORM SAVED")
+
+        pprint(form_state)
+
+        print()
 
 
     def update_screen_layout(self, layout_mode):
@@ -309,6 +380,33 @@ class MainWindow(QMainWindow):
         else:
 
             self.showNormal()
+
+    def update_remember_settings(self, enabled):
+
+        # Сохраняем состояние функции в памяти текущего запуска.
+        self.remember_settings_enabled = enabled
+
+        # Сохраняем состояние между запусками приложения.
+        self.settings.setValue(
+            "remember_settings",
+            enabled
+        )
+
+        # Если Remember Settings выключен,
+        # старое сохранённое состояние формы больше не нужно.
+        if not enabled:
+
+            self.settings.remove("saved_form")
+
+
+    def closeEvent(self, event):
+
+        # Сохраняем состояние формы
+        # перед закрытием приложения.
+        self.save_form_state()
+
+        # Передаём обработку Qt.
+        super().closeEvent(event)
 
 def main():
 

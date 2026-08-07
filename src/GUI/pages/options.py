@@ -6,6 +6,8 @@ class OptionsPage(QWidget):
 
     # Сообщаем MainWindow об изменении режима отображения.
     screen_layout_changed = Signal(str)
+    # Сообщаем MainWindow об изменении Remember Settings.
+    remember_settings_changed = Signal(bool)
 
     def __init__(self):
         super().__init__()
@@ -167,6 +169,8 @@ class OptionsPage(QWidget):
         else:
 
             self.remember_settings_switch.setText("OFF")
+
+        self.remember_settings_changed.emit(enabled)
 
 
     def update_check_updates_state(self, enabled):
