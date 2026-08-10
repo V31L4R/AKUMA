@@ -203,6 +203,12 @@ class MainWindow(QMainWindow):
         # сразу после создания обеих страниц.
         sync_corruption_limits()
 
+        # Если Remember Settings включён —
+        # восстанавливаем сохранённое состояние всей формы.
+        if self.remember_settings_enabled:
+
+            self.restore_form_state()
+
         content_area.addWidget(main_settings_page)
         content_area.addWidget(corruption_page)
         content_area.addWidget(advanced_page)
@@ -351,6 +357,188 @@ class MainWindow(QMainWindow):
                 ),
             },
         }
+
+    def restore_form_state(self):
+
+        # Получаем ранее сохранённое состояние формы.
+        saved_form = self.settings.value(
+            "saved_form",
+            None
+        )
+
+        # Если сохранённого состояния нет —
+        # восстанавливать нечего.
+        if not saved_form:
+
+            return
+
+        # Получаем сохранённые секции формы.
+        main_settings = saved_form.get(
+            "main_settings",
+            {}
+        )
+
+        corruption = saved_form.get(
+            "corruption",
+            {}
+        )
+
+        # -------------------------------------------------
+        # MAIN SETTINGS
+        # -------------------------------------------------
+
+        # Восстанавливаем Number of Records.
+        self.main_settings_page.records_input.setText(
+            main_settings.get(
+                "number_of_records_raw",
+                ""
+            )
+        )
+
+        # Восстанавливаем File Format.
+        saved_format = main_settings.get(
+            "file_format",
+            "CSV"
+        )
+
+        format_index = (
+            self.main_settings_page
+            .format_input
+            .findText(saved_format)
+        )
+
+        if format_index >= 0:
+
+            self.main_settings_page.format_input.setCurrentIndex(
+                format_index
+            )
+
+        # Восстанавливаем Included Fields.
+        self.main_settings_page.field_selector.set_selected_fields(
+            main_settings.get(
+                "included_fields",
+                []
+            )
+        )
+
+        # -------------------------------------------------
+        # SYNCHRONIZATION MAIN SETTINGS -> CORRUPTION
+        # -------------------------------------------------
+
+        # Получаем восстановленное количество записей.
+        records_text = (
+            self.main_settings_page
+            .records_input
+            .text()
+        )
+
+        records_count = (
+            int(records_text)
+            if records_text
+            else 0
+        )
+
+        # Получаем восстановленный список полей.
+        selected_fields = (
+            self.main_settings_page
+            .field_selector
+            .get_selected_fields()
+        )
+
+        # Передаём восстановленные данные на Corruption.
+        #
+        # Это важно сделать ДО восстановления
+        # Corrupted Columns и Amount Qa,
+        # потому что они зависят от Main Settings.
+        self.corruption_page.update_available_data(
+            records_count,
+            selected_fields
+        )
+
+        # -------------------------------------------------
+        # CORRUPTION
+        # -------------------------------------------------
+
+        # Восстанавливаем Corruption Mode.
+        saved_mode = corruption.get(
+            "mode",
+            "Rows"
+        )
+
+        mode_index = (
+            self.corruption_page
+            .corruption_mode
+            .findText(saved_mode)
+        )
+
+        if mode_index >= 0:
+
+            self.corruption_page.corruption_mode.setCurrentIndex(
+                mode_index
+            )
+
+        # Восстанавливаем единицу Amount:
+        # "%" или "Qa".
+        saved_amount_type = corruption.get(
+            "amount_type",
+            "%"
+        )
+
+        amount_type_index = (
+            self.corruption_page
+            .corruption_amount_type
+            .findText(saved_amount_type)
+        )
+
+        if amount_type_index >= 0:
+
+            self.corruption_page.corruption_amount_type.setCurrentIndex(
+                amount_type_index
+            )
+
+        # Восстанавливаем Amount только после Mode и Unit,
+        # чтобы валидатор уже имел правильный диапазон.
+        self.corruption_page.corruption_amount_input.setText(
+            corruption.get(
+                "amount_raw",
+                ""
+            )
+        )
+
+        # Восстанавливаем главный переключатель Corrupt Data.
+        self.corruption_page.corruption_switch.setChecked(
+            corruption.get(
+                "enabled",
+                False
+            )
+        )
+
+        # Восстанавливаем Exclusive Corruption.
+        self.corruption_page.exclusive_switch.setChecked(
+            corruption.get(
+                "exclusive",
+                False
+            )
+        )
+
+        # Восстанавливаем выбранные Corrupted Columns.
+        #
+        # К этому моменту update_available_data()
+        # уже пересоздал список доступных колонок.
+        self.corruption_page.corrupted_columns_selector.set_selected_fields(
+            corruption.get(
+                "corrupted_columns",
+                []
+            )
+        )
+
+        # Восстанавливаем выбранные Corruption Types.
+        self.corruption_page.corruption_type_selector.set_selected_fields(
+            corruption.get(
+                "corruption_types",
+                []
+            )
+        )
 
     def save_form_state(self):
 
