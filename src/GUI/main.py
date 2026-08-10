@@ -57,6 +57,15 @@ class MainWindow(QMainWindow):
             False,
             type=bool
         )
+
+        saved_form = self.settings.value("saved_form")
+
+        #Тест записи сохранения состояния
+        print()
+        print("RESTORED FROM SETTINGS")
+        pprint(saved_form)
+        print()
+
         self.setWindowTitle("AKUMA")
         self.resize(1000, 700)
         central_widget = QWidget()
